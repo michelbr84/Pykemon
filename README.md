@@ -56,16 +56,10 @@ Pykemon/
 *   **Save/Load System**: Persist your progress (JSON based).
 *   **Game Loop**: Smooth transitions between Title, Map, and Battle states.
 
-## To Do / Work in Progress
-
 *   **Dialogue System**: NPCs use a graphical dialogue box overlay for conversations.
 *   **Inventory UI**: Visual "Bag" menu in battle for using items.
 *   **Pokemon Switching**: Visual "PKMN" menu in battle for switching team members.
 *   **Custom Cursor**: Unique hand cursor for mouse interaction.
-
-## To Do / Work in Progress
-
-*   *(None - Core features complete)*
 
 ## Requirements
 
