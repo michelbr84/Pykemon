@@ -9,6 +9,9 @@ class GameWindow:
         self.screen = pygame.display.set_mode((width, height))
         pygame.display.set_caption("Pokemon Python Version")
         
+        # Cursor Setup
+        pygame.mouse.set_visible(False)
+        
         self.clock = pygame.time.Clock()
         self.running = True
         
@@ -17,6 +20,9 @@ class GameWindow:
         
         self.audio_manager = AudioManager()
         self.audio_manager.initialize()
+        
+        # Load Cursor Image
+        self.cursor_img = self.asset_manager.get_ui_image("cursor_hand.png")
         
         self.current_screen = None
         # Common data shared across screens (player, verification state)
@@ -46,6 +52,12 @@ class GameWindow:
             else:
                 self.screen.fill((0, 0, 0))
                 
+            # Draw Custom Cursor
+            if self.cursor_img:
+                mouse_pos = pygame.mouse.get_pos()
+                # Use top-left of image as hotspot by default
+                self.screen.blit(self.cursor_img, mouse_pos)
+            
             pygame.display.flip()
         
         pygame.quit()
