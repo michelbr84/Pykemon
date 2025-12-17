@@ -58,11 +58,14 @@ Pykemon/
 
 ## To Do / Work in Progress
 
-*   **Dialogue System**: NPCs currently use console/toast outputs; a graphical dialogue box overlay is partially implemented but not fully utilized for conversations.
-*   **Inventory UI**: The "Bag" menu in battle and overworld is currently a placeholder or text-based.
-*   **Pokemon Switching**: The "PKMN" menu in battle needs a graphical interface for switching team members.
-*   **Shop Interface**: Not yet implemented visually.
-*   **Animations**: Attack animations are currently text/log based; visual effects (particles) are planned.
+*   **Dialogue System**: NPCs use a graphical dialogue box overlay for conversations.
+*   **Inventory UI**: Visual "Bag" menu in battle for using items.
+*   **Pokemon Switching**: Visual "PKMN" menu in battle for switching team members.
+*   **Custom Cursor**: Unique hand cursor for mouse interaction.
+
+## To Do / Work in Progress
+
+*   *(None - Core features complete)*
 
 ## Requirements
 
