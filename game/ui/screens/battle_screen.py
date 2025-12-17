@@ -123,6 +123,7 @@ class BattleScreen(BaseScreen):
             elif key == pygame.K_ESCAPE or key == pygame.K_x:
                 self.state = "MAIN_MENU"
 
+
         elif self.state == "BAG_MENU":
             items = list(self.window.player.inventory.keys())
             if key == pygame.K_ESCAPE or key == pygame.K_x:
@@ -184,6 +185,10 @@ class BattleScreen(BaseScreen):
     def process_turn_result(self, res):
         self.message_queue.extend(res['logs'])
         self.state = "TEXT_WAIT"
+        
+    def do_move(self, move_name):
+        res = self.battle.execute_turn(("fight", move_name))
+        self.process_turn_result(res)
 
     def draw(self, surface):
         # Draw BG
@@ -237,6 +242,28 @@ class BattleScreen(BaseScreen):
                     surf = self.font.render(txt, True, (0, 0, 0))
                     surface.blit(surf, pos)
                     
+            elif self.state == "MOVE_MENU":
+                # Draw Move Menu
+                menu_rect = pygame.Rect(0, 420, 800, 180)
+                pygame.draw.rect(surface, (240, 240, 255), menu_rect)
+                pygame.draw.rect(surface, (0, 0, 150), menu_rect, 4)
+                
+                moves = self.battle.active_player_mon.moves
+                for i, m in enumerate(moves):
+                    # Grid 2x2
+                    col = i % 2
+                    row = i // 2
+                    x = 60 + col * 350
+                    y = 450 + row * 60
+                    
+                    # Key visual
+                    key_surf = self.font.render(f"[{i+1}]", True, (200, 0, 0))
+                    surface.blit(key_surf, (x - 40, y))
+                    
+                    # Move Name
+                    name_surf = self.font.render(m, True, (0, 0, 0))
+                    surface.blit(name_surf, (x, y))
+
             elif self.state == "BAG_MENU":
                 # Background
                 menu_rect = pygame.Rect(0, 0, 800, 600)
