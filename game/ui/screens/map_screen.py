@@ -151,6 +151,14 @@ class MapScreen(BaseScreen):
                 self.update_map_image()
                 self.play_map_music()
                 
+                # Check for Controls Tutorial (One-time)
+                if "Viridian City" in self.player.current_location:
+                    if not self.player.story_flags.get("seen_controls_viridian"):
+                        self.player.story_flags["seen_controls_viridian"] = True
+                        msg = "CONTROLS: Arrow Keys to Move | [G] Challenge Gym | [H] Heal Party | [S] Save Game"
+                        self.dialogue_ui.show_message(msg)
+                        res["message"] = None # Suppress "Traveled to..." message
+                
             if res["message"]:
                  self.dialogue_ui.show_message(res["message"])
                  

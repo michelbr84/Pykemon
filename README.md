@@ -61,6 +61,15 @@ Pykemon/
 *   **Pokemon Switching**: Visual "PKMN" menu in battle for switching team members.
 *   **Custom Cursor**: Unique hand cursor for mouse interaction.
 
+## Controls
+
+*   **Mouse**: Navigate the Main Menu by hovering and clicking options.
+*   **Arrow Keys**: Move your character on the map.
+*   **Interaction Shortcuts (Map Only)**:
+    *   **[G]**: Challenge the Gym Leader (Viridian City only).
+    *   **[H]**: Heal your party (Towns/Cities only).
+    *   **[S]**: Save your game.
+
 ## Requirements
 
 *   **Python**: 3.8 or higher
