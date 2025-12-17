@@ -1,0 +1,41 @@
+{
+    "player_name": "Renata",
+    "rival_name": "Michel",
+    "money": 250,
+    "badges": [],
+    "current_location": "Pallet Town",
+    "inventory": {
+        "Pokeball": 5,
+        "Potion": 2
+    },
+    "story_flags": {
+        "gym1_beaten": false,
+        "rival1_done": true,
+        "rival2_done": false,
+        "grunt_defeated": false,
+        "rocket_defeated": false,
+        "joey_defeated": false
+    },
+    "pokedex_seen": [
+        "Aquade",
+        "Florin"
+    ],
+    "pokedex_caught": [
+        "Aquade"
+    ],
+    "party": [
+        {
+            "species": "Aquade",
+            "level": 6,
+            "current_hp": 47,
+            "max_hp": 47,
+            "status": null,
+            "moves": [
+                "Tackle",
+                "Water Gun"
+            ],
+            "exp": 0
+        }
+    ],
+    "storage": []
+}

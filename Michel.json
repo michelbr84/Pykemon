@@ -1,0 +1,49 @@
+{
+    "player_name": "Michel",
+    "rival_name": "Renata",
+    "money": 19000,
+    "badges": [],
+    "current_location": "Rocket Hideout",
+    "inventory": {
+        "Pokeball": 10,
+        "Potion": 10,
+        "Thunder Stone": 5,
+        "Super Potion": 8
+    },
+    "story_flags": {
+        "gym1_beaten": true,
+        "rival1_done": true,
+        "rival2_done": true,
+        "grunt_defeated": true,
+        "rocket_defeated": true,
+        "joey_defeated": true
+    },
+    "pokedex_seen": [
+        "Geodon",
+        "Pyron",
+        "Rattatak",
+        "Wingon",
+        "Slimer",
+        "Geon",
+        "Aquaria",
+        "Aquade"
+    ],
+    "pokedex_caught": [
+        "Pyron"
+    ],
+    "party": [
+        {
+            "species": "Pyron",
+            "level": 30,
+            "current_hp": 129,
+            "max_hp": 165,
+            "status": null,
+            "moves": [
+                "Tackle",
+                "Ember"
+            ],
+            "exp": 30
+        }
+    ],
+    "storage": []
+}
