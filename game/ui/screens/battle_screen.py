@@ -1,6 +1,7 @@
 import pygame
 from game.ui.screens.base_screen import BaseScreen
 from game.logic.battle import Battle
+from game.ui.components.dialogue_box import DialogueBox
 
 class BattleScreen(BaseScreen):
     def __init__(self, window, encounter_event):
@@ -15,7 +16,6 @@ class BattleScreen(BaseScreen):
         self.encounter_event = encounter_event
         
         # Determine Background
-        # Logic: If wild, maybe 'battle_grass', if city 'battle_city'. Defaults to grass.
         loc = window.player.current_location
         bg_name = "battle_grass.png"
         if "City" in loc: bg_name = "battle_city.png"
@@ -25,7 +25,9 @@ class BattleScreen(BaseScreen):
         self.bg = self.manager.get_image(["backgrounds", bg_name])
         
         # UI Elements
-        self.dialogue_box = self.manager.get_ui_image("dialogue_box.png")
+        # Dialogue Component replaces manual dialogue box handling
+        self.dialogue_ui = DialogueBox(self.manager, window.height)
+        
         self.hp_frame = self.manager.get_ui_image("hp_bar_frame.png")
         self.hp_green = self.manager.get_ui_image("hp_bar_fill_green.png")
         self.hp_yellow = self.manager.get_ui_image("hp_bar_fill_yellow.png")
@@ -34,12 +36,9 @@ class BattleScreen(BaseScreen):
         self.menu_box = self.manager.get_ui_image("battle_menu_box.png")
         
         # State
-        self.state = "INTRO" # INTRO, MAIN_MENU, MOVE_MENU, BAG_MENU, POKEMON_MENU, ANIMATING, TEXT_WAIT, FINISHED
+        self.state = "INTRO" 
         self.message_queue = list(self.battle.logs) # Start with intro logs
         self.battle.logs = [] # Clear logic logs
-        self.current_message = ""
-        self.message_timer = 0
-        self.waiting_for_input = False
         
         # Layout Constants
         self.opp_pos = (500, 50)
@@ -55,18 +54,20 @@ class BattleScreen(BaseScreen):
             
         self.audio.play_bgm(track)
         
-        # Advance first message
-        self.next_message()
-
-    def next_message(self):
-        if self.message_queue:
-            self.current_message = self.message_queue.pop(0)
-            self.waiting_for_input = True
-        else:
-            if self.battle.finished:
+    def update(self, dt):
+        # Message Queue Management
+        if not self.dialogue_ui.visible:
+            if self.message_queue:
+                msg = self.message_queue.pop(0)
+                self.dialogue_ui.show_message(msg)
+            elif self.battle.finished:
                 self.end_battle()
-            else:
+            elif self.state == "TEXT_WAIT":
+                # Turn finished, back to menu
                 self.state = "MAIN_MENU"
+
+        if self.state == "INTRO" and not self.message_queue and not self.dialogue_ui.visible:
+            self.state = "MAIN_MENU"
 
     def end_battle(self):
         # Result handling
@@ -75,61 +76,36 @@ class BattleScreen(BaseScreen):
                 self.window.player.story_flags[self.encounter_event["flag_on_win"]] = True
             
             # Transition back to Map
-            self.audio.play_bgm("victory") # Brief victory tune?
-            # Ideally wait a bit then switch
-            # For now, immediate switch after last text input
+            self.audio.play_bgm("victory")
+            # We can queue a victory message if not already there
+            # Assuming logic added "Won!" log.
+            
+            # Immediate switch after dialogue closes (handled in update)
             from game.ui.screens.map_screen import MapScreen
             self.window.set_screen(MapScreen)
         else:
-             # Lost - in Pokemon usually Whiteout -> Center. Simple restart for now?
-             # Logic says "You lost...".
-             # Restore sanity or just reload Map at start
-             # For modernization polish: Heal and warp to Pallet Town
+             # Lost
              self.window.player.heal_all_pokemon()
              self.window.player.current_location = "Pallet Town"
              from game.ui.screens.map_screen import MapScreen
              self.window.set_screen(MapScreen)
 
     def handle_input(self, event):
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE or event.key == pygame.K_RETURN or event.key == pygame.K_z:
-                if self.waiting_for_input:
-                    self.waiting_for_input = False
-                    self.next_message()
-                    return
-                
-                # Menus
-                if self.state == "MAIN_MENU":
-                    # 1. Fight, 2. Bag, 3. Poke, 4. Run
-                    # Simplified selection: 1,2,3,4 number keys or arrow keys?
-                    # Let's use numeric for simplicity in prototype, or simple index
-                    pass
-
-    # We'll use a simple index for menus
-    selection_index = 0
-    
-    def handle_input(self, event):
-        if event.type != pygame.KEYDOWN: return
-        
-        key = event.key
-        
-        if self.waiting_for_input:
-            if key in (pygame.K_SPACE, pygame.K_RETURN, pygame.K_z):
-                self.waiting_for_input = False
-                self.next_message()
+        # Dialogue Priority
+        if self.dialogue_ui.visible:
+            self.dialogue_ui.handle_input(event)
             return
+
+        if event.type != pygame.KEYDOWN: return
+        key = event.key
             
         if self.state == "MAIN_MENU":
             if key == pygame.K_1: # Fight
                 self.state = "MOVE_MENU"
             elif key == pygame.K_2: # Bag
-                # TODO: Bag Implementation
                 self.message_queue.append("Bag not implemented yet!")
-                self.next_message()
             elif key == pygame.K_3: # Pokemon
-                 # TODO: Switch Implementation
                 self.message_queue.append("Switch not implemented yet!")
-                self.next_message()
             elif key == pygame.K_4: # Run
                 res = self.battle.execute_turn(("run",))
                 self.process_turn_result(res)
@@ -154,10 +130,6 @@ class BattleScreen(BaseScreen):
     def process_turn_result(self, res):
         self.message_queue.extend(res['logs'])
         self.state = "TEXT_WAIT"
-        self.next_message()
-
-    def update(self, dt):
-        pass
 
     def draw(self, surface):
         # Draw BG
@@ -169,57 +141,69 @@ class BattleScreen(BaseScreen):
         opp_mon = self.battle.active_opponent_mon
         opp_sprite = self.manager.get_sprite(f"{opp_mon.species.lower()}_front.png")
         if opp_sprite:
-             # Scale if needed? spec says 256x256. 
-             # Opponent Position: Top Right (500, 50)
              surface.blit(opp_sprite, self.opp_pos)
              
         # Draw Player Pokemon
         player_mon = self.battle.active_player_mon
         player_sprite = self.manager.get_sprite(f"{player_mon.species.lower()}_back.png")
         if player_sprite:
-             # Player Position: Bottom Left (50, 250) (Base Y 600 - 180 (dialogue) - 256?)
-             # Actually Dialogue is 180px tall. Screen 600. Dialogue starts at 420.
-             # Player sprite bottom should be around 420.
-             # 420 - 256 = 164. So Y=164 is too high.
-             # Let's adjust positions:
-             # Opponent: Right side, Y=50.
-             # Player: Left side, Y=200.
              surface.blit(player_sprite, self.player_pos)
              
-        # Draw Dialogue Box
-        if self.dialogue_box:
-             surface.blit(self.dialogue_box, (0, 600 - 180))
-             
-        # Draw Text
-        if self.current_message:
-            # Wrap text?
-            text_surf = self.font.render(self.current_message, True, (0, 0, 0))
-            surface.blit(text_surf, (40, 600 - 140))
-        elif self.state == "MAIN_MENU":
-            # Draw Menu Box
-            if self.menu_box:
-                surface.blit(self.menu_box, (480, 600 - 180 - 200 + 40)) # Arbitrary placement
-                
-            # Draw Options
-            menu_x = 520
-            menu_y = 300
-            options = ["1. Fight", "2. Bag", "3. PKMN", "4. Run"]
-            for i, opt in enumerate(options):
-                txt = self.font.render(opt, True, (0, 0, 0))
-                surface.blit(txt, (menu_x, menu_y + i * 40))
-                
-        elif self.state == "MOVE_MENU":
-             # Draw Moves
-             menu_x = 40
-             menu_y = 600 - 140
-             moves = self.battle.active_player_mon.moves
-             for i, m in enumerate(moves):
-                 txt = self.font.render(f"{i+1}. {m}", True, (0, 0, 0))
-                 surface.blit(txt, (menu_x, menu_y + i * 30))
-                 
         # Draw HP Bars
         self.draw_hp_bar(surface, opp_mon, 50, 50, is_opponent=True)
-        self.draw_hp_bar(surface, player_mon, 500, 350, is_opponent=False) # Positions guessed
+        self.draw_hp_bar(surface, player_mon, 500, 350, is_opponent=False)
+
+        # Draw Dialogue (Overlay)
+        self.dialogue_ui.draw(surface)
+        
+        # Draw Menus (Only if dialogue not visible, to avoid clutter? Or underneath?)
+        # Logic: If dialogue is visible, it's covering the bottom usually.
+        # But if we want to show menus, we should ensure they aren't covered or dialogue acts as valid overlay.
+        # If State is MAIN_MENU or MOVE_MENU, Dialogue should be hidden usually.
+        
+        if not self.dialogue_ui.visible:
+            if self.state == "MAIN_MENU":
+                # Draw Main Menu
+                # Use the menu_box or a simple rect
+                menu_rect = pygame.Rect(0, 420, 800, 180) # Bottom area
+                pygame.draw.rect(surface, (255, 255, 255), menu_rect)
+                pygame.draw.rect(surface, (0, 0, 0), menu_rect, 4)
+                
+                # Title
+                title = self.font.render("What will you do?", True, (0, 0, 0))
+                surface.blit(title, (30, 450))
+                
+                # Options
+                # 1. Fight  2. Bag
+                # 3. PKMN   4. Run
+                opts = [("1. FIGHT", (400, 450)), ("2. BAG", (600, 450)), 
+                        ("3. PKMN", (400, 510)), ("4. RUN", (600, 510))]
+                        
+                for txt, pos in opts:
+                    surf = self.font.render(txt, True, (0, 0, 0))
+                    surface.blit(surf, pos)
+                    
+            elif self.state == "MOVE_MENU":
+                # Draw Move Menu
+                menu_rect = pygame.Rect(0, 420, 800, 180)
+                pygame.draw.rect(surface, (240, 240, 255), menu_rect)
+                pygame.draw.rect(surface, (0, 0, 150), menu_rect, 4)
+                
+                moves = self.battle.active_player_mon.moves
+                for i, m in enumerate(moves):
+                    # Grid 2x2
+                    col = i % 2
+                    row = i // 2
+                    x = 60 + col * 350
+                    y = 450 + row * 60
+                    
+                    # Key visual
+                    key_surf = self.font.render(f"[{i+1}]", True, (200, 0, 0))
+                    surface.blit(key_surf, (x - 40, y))
+                    
+                    # Move Name
+                    name_surf = self.font.render(m, True, (0, 0, 0))
+                    surface.blit(name_surf, (x, y))
 
     def draw_hp_bar(self, surface, mon, x, y, is_opponent):
         # Name
@@ -243,10 +227,6 @@ class BattleScreen(BaseScreen):
         elif ratio < 0.5: fill_img = self.hp_yellow
         
         if fill_img and fill_width > 0:
-            # Scale or subsection? Spec says "hp_bar_fill_green.png -> 196x20 px"
-            # It's a full bar image. We should crop it or scale it.
-            # Crop is better for "bar" effect usually.
-            # area = (0, 0, fill_width, 20)
             surface.blit(fill_img, (x + 2, y + 2), (0, 0, fill_width, 20)) # Offset for frame
             
         # HP Text (Player only usually)

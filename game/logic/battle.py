@@ -233,11 +233,9 @@ class Battle:
             # XP Gain
             if not self.link_battle:
                 exp = mon.level * 20
-                self.active_player_mon.gain_exp(exp) # This returns messages now...
-                self.logs.append(f"Gained {exp} XP.") # Simplification: ignoring level up logs for moment or need to capture them.
-                # Actually, I should capture them.
-                # But active_player_mon is a Pokemon object.
-                # I need to handle the dict return from gain_exp?
+                res = self.active_player_mon.gain_exp(exp)
+                self.logs.append(f"Gained {exp} XP.")
+                self.logs.extend(res['messages'])
                 # "gain_exp" logic changed in new model.
             
             if self.is_wild:

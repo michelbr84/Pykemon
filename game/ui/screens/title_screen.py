@@ -17,13 +17,44 @@ class TitleScreen(BaseScreen):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_UP:
                 self.selected_index = (self.selected_index - 1) % len(self.options)
-                self.audio.play_sfx("menu_select") # Assuming generic sfx name, or need to verify file
+                self.audio.play_sfx("menu_select") 
             elif event.key == pygame.K_DOWN:
                 self.selected_index = (self.selected_index + 1) % len(self.options)
                 self.audio.play_sfx("menu_select")
             elif event.key == pygame.K_RETURN or event.key == pygame.K_SPACE:
-                self.audio.play_sfx("menu_confirm") # Assuming generic sfx name
+                self.audio.play_sfx("menu_confirm")
                 self.select_option()
+
+        # Mouse Interaction
+        elif event.type == pygame.MOUSEMOTION:
+            mouse_pos = event.pos
+            # Check if mouse acts on any option
+            # We need the rects. We can recalculate them here to be safe and responsive.
+            start_y = 400
+            for i, option in enumerate(self.options):
+                # Approximation of text size for hit testing (centered)
+                # Ideally we get this from font.size(), but we need access to the font object.
+                # BaseScreen has self.title_font
+                text_w, text_h = self.title_font.size(option)
+                rect = pygame.Rect(0, 0, text_w, text_h)
+                rect.center = (self.window.width//2, start_y + i * 60)
+                
+                if rect.collidepoint(mouse_pos):
+                    if self.selected_index != i:
+                        self.selected_index = i
+                        self.audio.play_sfx("menu_select")
+
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1: # Left Click
+                mouse_pos = event.pos
+                start_y = 400
+                for i, option in enumerate(self.options):
+                    text_w, text_h = self.title_font.size(option)
+                    rect = pygame.Rect(0, 0, text_w, text_h)
+                    rect.center = (self.window.width//2, start_y + i * 60)
+                    
+                    if rect.collidepoint(mouse_pos):
+                        self.select_option()
 
     def select_option(self):
         choice = self.options[self.selected_index]
@@ -65,10 +96,6 @@ class TitleScreen(BaseScreen):
         else:
             surface.fill((50, 50, 150))
             
-        # Draw Title Text (using system font for now if logo not in BG)
-        # title_surf = self.title_font.render("Pokemon Python", True, (255, 255, 0))
-        # surface.blit(title_surf, (self.window.width//2 - title_surf.get_width()//2, 100))
-        
         # Draw Options
         start_y = 400
         for i, option in enumerate(self.options):

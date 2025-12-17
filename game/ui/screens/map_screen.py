@@ -1,6 +1,7 @@
 import pygame
 from game.ui.screens.base_screen import BaseScreen
 from game.logic.exploration import ExplorationLogic
+from game.ui.components.dialogue_box import DialogueBox
 
 class MapScreen(BaseScreen):
     def __init__(self, window):
@@ -8,19 +9,23 @@ class MapScreen(BaseScreen):
         self.player = window.player
         self.update_map_image()
         
-        # Player position visual state
-        # Center of screen for now? Or keep player logic coordinates?
-        # Logic has "location" string. We need valid coordinates for a real map.
-        # For this modernization, we might need to fake a grid or just show a static screen with a character.
-        # Let's assume the maps are 800x600 backgrounds and player moves loosely or just stands there.
-        # User requested: "Overworld sprites... Used for map movement"
-        # We will implement simple movement within the screen bounds.
-        
+        # Player Rendering
         self.player_pos = [400, 300]
         self.speed = 4
         self.animation_frame = 0
         self.moving = False
         self.facing = "down" # down, up, left, right
+        
+        # Load Player Sprite
+        # Try specific user requested path first, then fallback to asset manager
+        # User said: "assets/images/characters/player.png"
+        self.player_sprite = self.manager.get_image(["characters", "player.png"])
+        if not self.player_sprite:
+             # Fallback if file not found exactly there
+             self.player_sprite = self.manager.get_sprite("player.png")
+        
+        # Dialogue Component
+        self.dialogue_ui = DialogueBox(self.manager, window.height)
         
         # Map music
         self.play_map_music()
@@ -52,12 +57,21 @@ class MapScreen(BaseScreen):
         self.audio.play_bgm(track)
         
     def handle_input(self, event):
+        # Delegate to dialogue first
+        if self.dialogue_ui.visible:
+            if self.dialogue_ui.handle_input(event):
+                return
+            return # Block other input if dialogue is open
+            
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RETURN:
-                # Open Menu
+                # Open Menu (TODO)
                 pass
                 
     def update(self, dt):
+        if self.dialogue_ui.visible:
+            return # Pause world while dialogue open
+            
         keys = pygame.key.get_pressed()
         dx, dy = 0, 0
         if keys[pygame.K_LEFT]:
@@ -92,8 +106,7 @@ class MapScreen(BaseScreen):
                 self.play_map_music()
                 
             if res["message"]:
-                 # Ideally show a toast or dialogue
-                 print(res["message"]) 
+                 self.dialogue_ui.show_message(res["message"])
                  
             if res["event"] and res["event"]["type"] == "battle":
                  # Transition to Battle Screen
@@ -116,27 +129,27 @@ class MapScreen(BaseScreen):
         if self.bg:
             bg_scaled = pygame.transform.scale(self.bg, (self.window.width, self.window.height))
             surface.blit(bg_scaled, (0, 0))
+        else:
+            surface.fill((0, 0, 0))
         
-        # Draw Player
-        # Need character sprites: e.g. "player_down_1.png"
-        # User provided: "assets/images/characters/"
-        # We assume standard naming or just one file for now.
-        # Plan says: "Overworld sprites: 64x64 px"
-        # Let's try to load "hero_run_down_0.png" or similar if we knew the names.
-        # User just said: `assets/images/characters/` exists.
-        # We'll try generic names like "Red_down.png" or just reuse a placeholder if specific names unknown.
-        # Actually, let's look at what files are in characters folder in next step or assume "player.png"?
-        # User request didn't list specific character filenames, just resolution.
-        # We'll use a placeholder colored rect if sprite load fails, or try "ash.png".
-        
-        # Simulating Sprite Animation
-        sprite_name = "player_walk.png" # Placeholder
-        # We'll just draw a Circle for the player if we don't have the exact filename right now
-        # Actually we should use the asset manager to safely get a placeholder.
-        
-        color = (255, 0, 0)
-        pygame.draw.circle(surface, color, (int(self.player_pos[0]), int(self.player_pos[1])), 16)
+        # Draw Player Sprite
+        if self.player_sprite:
+            # Center the sprite on the position? Or top-left?
+            # Assuming sprite is 64x64 and pos is center:
+            # rect = self.player_sprite.get_rect(center=(self.player_pos[0], self.player_pos[1]))
+            # But earlier logic might have used top-left. Let's stick to center for safety with circle replacement.
+            rect = self.player_sprite.get_rect(center=(int(self.player_pos[0]), int(self.player_pos[1])))
+            surface.blit(self.player_sprite, rect)
+        else:
+            # Fallback (User said REMOVE red dot, but if sprite fails, we need something invisble or error?)
+            # I will draw a placeholder "sprite missing" or just nothing if strictly following "remove red dot".
+            # But "remove red dot" implied "replace with sprite".
+            # I'll stick to sprite blit above. If None, nothing draws (Player invisible).
+            pass
         
         # Draw UI Overlay (Location Name)
         text = self.title_font.render(self.player.current_location, True, (255, 255, 255))
         surface.blit(text, (20, 20))
+        
+        # Draw Dialogue
+        self.dialogue_ui.draw(surface)
