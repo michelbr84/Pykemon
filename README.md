@@ -1,4 +1,4 @@
-# Pokemon Python Version
+# Pykemon
 
 <p align="center">
   <img src="assets/images/backgrounds/bg_title_screen.png" alt="Game Title Screen">
