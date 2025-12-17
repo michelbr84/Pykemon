@@ -80,7 +80,7 @@ Pykemon/
 3.  **Run the Game**:
     Navigate to the project directory and execute the GUI runner:
     ```bash
-    cd d:/Jogos/Pokemon/v2
+    cd c:/Jogos/Pykemon
     python run_game_gui.py
     ```
 
