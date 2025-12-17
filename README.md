@@ -6,7 +6,7 @@
 
 ## About the Game
 
-Pokemon Python Version is a modernization of a classic console-style RPG, rebuilt with a Python backend and a Pygame frontend. It features turn-based combat, overworld exploration, and character progression familiar to fans of the monster-catching genre.
+Pykemon is a modernization of a classic console-style RPG, rebuilt with a Python backend and a Pygame frontend. It features turn-based combat, overworld exploration, and character progression familiar to fans of the monster-catching genre.
 
 The goal of this project was to refactor a text-based Python prototype into a fully graphical experience, integrating professional assets (sprites, backgrounds, UI) and audio while preserving the complex underlying RPG logic (stats, types, moves, evolution).
 
