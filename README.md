@@ -13,7 +13,7 @@ The goal of this project was to refactor a text-based Python prototype into a fu
 ## Project Structure
 
 ```
-Pokemon/v2/
+Pykemon/
 ├── run_game_gui.py         # Main Entry Point (GUI)
 ├── main.py                 # Legacy Terminal Entry Point
 ├── assets/                 # Game Assets
