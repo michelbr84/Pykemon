@@ -211,5 +211,5 @@ class ExplorationLogic:
         return {
             "success": True,
             "message": "Gym Leader Rocky: Prepare for battle!",
-            "event": {"type": "battle", "opponent": leader, "is_wild": False}
+            "event": {"type": "battle", "opponent": leader, "is_wild": False, "flag_on_win": "gym1_beaten"}
         }

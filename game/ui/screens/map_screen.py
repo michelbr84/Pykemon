@@ -65,8 +65,54 @@ class MapScreen(BaseScreen):
             
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RETURN:
-                # Open Menu (TODO)
-                pass
+                # Placeholder for menu if needed, but we use shortcuts now
+                self.dialogue_ui.show_message("Menu not implemented. Use 'S' to Save.")
+            elif event.key == pygame.K_g:
+                # Challenge Gym Shortcut
+                if "Viridian City" in self.player.current_location:
+                    from game.logic.exploration import ExplorationLogic
+                    res = ExplorationLogic.challenge_gym(self.player)
+                    if res["success"]:
+                        self.dialogue_ui.show_message(res["message"])
+                         # Wait for dialogue close to trigger battle? 
+                         # DialogueBox currently "hides" on input. 
+                         # We need a callback or queue system? 
+                         # Actually MapScreen.update checks res["event"]. 
+                         # Here we are bypassing update() logic.
+                         # We should duplicate the event handling from update.
+                        if res.get("event") and res["event"]["type"] == "battle":
+                             from game.ui.screens.battle_screen import BattleScreen
+                             # We can't switch immediately if we want to show the message.
+                             # But DialogueBox blocks update.
+                             # Simple solution: Show message, and hook the callback? 
+                             # Or just switch immediately. "Prepare for battle!" might be lost.
+                             # Let's switch immediately for stability, or implement a delay.
+                             # Better: Check existing update logic `res` handling. 
+                             # `update` handles map movement results. This is manual trigger.
+                             self.window.set_screen(BattleScreen, encounter_event=res["event"])
+                    else:
+                        self.dialogue_ui.show_message(res["message"])
+                else:
+                    self.dialogue_ui.show_message("There is no Gym here.")
+                    
+            elif event.key == pygame.K_s:
+                # Save Game
+                from game.state import GameState
+                success, msg = GameState.save_game(self.player)
+                self.dialogue_ui.show_message(msg)
+                
+            elif event.key == pygame.K_h:
+                # Heal Party
+                # Logic check: usually only at Center. But simplified for now:
+                # If only in cities? Or everywhere? Guide instructions will clarify ("At Pokemon Centers... implemented as shortcut H in cities").
+                # Let's allow H everywhere for "usability" or strictness? 
+                # User prompted "How to unlock...". Let's say H works in Towns.
+                loc = self.player.current_location
+                if "Town" in loc or "City" in loc:
+                     self.player.heal_all_pokemon()
+                     self.dialogue_ui.show_message("Your party has been fully healed!")
+                else:
+                     self.dialogue_ui.show_message("Can only heal in Towns/Cities.")
                 
     def update(self, dt):
         if self.dialogue_ui.visible:

@@ -38,9 +38,35 @@ class AudioManager:
         
         # Preload SFX if needed, or load on demand
         self.sfx_cache = {}
+        # Mapping logical names to physical filenames as per user spec
         self.sfx_files = {
-            # Add specific SFX mappings here if they have specific names, 
-            # otherwise we can try to load by filename directly
+            # Menu
+            "menu_select": "sfx_select.mp3",
+            "menu_confirm": "sfx_confirm.mp3",
+            "menu_cancel": "sfx_cancel.mp3", 
+            "bump": "sfx_bump.mp3",
+            "save": "sfx_save.mp3",
+            
+            # Battle
+            "tackle": "sfx_tackle.mp3",
+            "ember": "sfx_ember.mp3",
+            "water_gun": "sfx_water_gun.mp3",
+            "vine_whip": "sfx_vine_whip.mp3",
+            "electric": "sfx_electric.mp3",
+            "rock_smash": "sfx_rock_smash.mp3",
+            "poison": "sfx_poison.mp3",
+            "faint": "sfx_faint.mp3",
+            "run": "sfx_run.mp3",
+            "pokeball_throw": "sfx_pokeball_throw.mp3",
+            "pokeball_shake": "sfx_pokeball_shake.mp3",
+            "pokeball_catch": "sfx_pokeball_catch.mp3", 
+            "pokeball_break": "sfx_pokeball_break.mp3",
+            "level_up": "sfx_level_up.mp3",
+            
+            # Misc
+            "heal": "sfx_heal.mp3",
+            "item_get": "sfx_item_get.mp3",
+            "evolution_complete": "sfx_evolution_complete.mp3"
         }
         
         self.current_track = None

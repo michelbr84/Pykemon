@@ -1,0 +1,33 @@
+{
+    "player_name": "Ash",
+    "rival_name": "Rival",
+    "money": 0,
+    "badges": [],
+    "current_location": "Pallet Town",
+    "inventory": {},
+    "story_flags": {
+        "gym1_beaten": false,
+        "rival1_done": false,
+        "rival2_done": false,
+        "grunt_defeated": false,
+        "rocket_defeated": false,
+        "joey_defeated": false
+    },
+    "pokedex_seen": [],
+    "pokedex_caught": [],
+    "party": [
+        {
+            "species": "Pyron",
+            "level": 5,
+            "current_hp": 40,
+            "max_hp": 40,
+            "status": null,
+            "moves": [
+                "Tackle",
+                "Ember"
+            ],
+            "exp": 0
+        }
+    ],
+    "storage": []
+}
